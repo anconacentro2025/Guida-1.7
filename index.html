@@ -29,12 +29,29 @@
         .lang-btn { padding: 5px 12px; font-size: .72rem; font-weight: 500; cursor: pointer; border: none; background: transparent; color: rgba(255,255,255,.65); transition: all .2s; }
         .lang-btn.active { background: var(--terracotta); color: white; }
 
-        .home-banner { width: 100%; height: 60vh; max-height: 500px; overflow: hidden; position: relative; background: var(--sand); transition: height .3s ease, max-height .3s ease; }
-        .home-banner.section-mode { height: 22vh; max-height: 160px; }
-        .home-banner-img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.4s ease; }
-        .home-banner-img.loaded { opacity: 1; }
-        .home-banner-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 3rem; background: linear-gradient(135deg, var(--sand), var(--cream)); transition: opacity 0.4s ease; }
-        .home-banner-placeholder.hidden { opacity: 0; pointer-events: none; }
+        .home-banner {
+            width: 100%;
+            height: 280px;
+            max-height: 500px;
+            overflow: hidden;
+            position: relative;
+            background: var(--sand);
+            transition: height .3s ease, max-height .3s ease;
+        }
+        .home-banner.section-mode {
+            height: 160px;
+            max-height: 160px;
+        }
+        .home-banner-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            opacity: 1;
+        }
+        .home-banner-placeholder {
+            display: none;
+        }
 
         .nav-scroll { display: flex; gap: 8px; padding: 14px 20px; overflow-x: auto; background: var(--white); border-bottom: 1px solid var(--sand); -webkit-overflow-scrolling: touch; scrollbar-width: none; white-space: nowrap; }
         .nav-scroll::-webkit-scrollbar { display: none; }
@@ -154,9 +171,7 @@
     </header>
 
     <div class="home-banner" id="homeBanner">
-        <div class="home-banner-placeholder" id="bannerPlaceholder">🏠</div>
-        <img class="home-banner-img" id="bannerImg" data-src="" alt="Ancona Centro"
-             onload="this.classList.add('loaded');document.getElementById('bannerPlaceholder').classList.add('hidden');"
+        <img class="home-banner-img" id="bannerImg" src="" alt="Ancona Centro"
              onerror="this.style.display='none';">
     </div>
 
@@ -232,7 +247,6 @@ let translationCache = new Map();
 try { const s = localStorage.getItem('guideTranslations'); if(s) translationCache = new Map(JSON.parse(s)); } catch(e) {}
 function saveCache(){ try { localStorage.setItem('guideTranslations', JSON.stringify([...translationCache])); } catch(e) {} }
 
-// Traduzione dinamica: ora supporta sia en che pl
 async function translateText(text) {
     if (!text || currentLang === 'it') return text;
     const cacheKey = text + '_' + currentLang;
@@ -247,7 +261,6 @@ async function translateText(text) {
 }
 function getMapLink(place){ return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(place+', Ancona Italia'); }
 
-// Traduzioni statiche principali per il polacco
 const staticTranslationsPL = {
     "Password copiata!": "Hasło skopiowane!",
     "Password": "Hasło",
@@ -275,13 +288,11 @@ const staticTranslationsPL = {
     "Portale turistico ufficiale": "Oficjalny portal turystyczny"
 };
 
-// Funzione tr estesa a tre lingue
 function tr(it, en, pl){
     if (currentLang === 'it') return it;
     if (currentLang === 'en') return en;
     if (currentLang === 'pl') {
         if (pl) return pl;
-        // fallback su traduzione statica o it
         return staticTranslationsPL[it] || it;
     }
     return it;
@@ -297,19 +308,9 @@ function setLang(lang){
 
 function setBannerPhoto(){
     const img = document.getElementById('bannerImg');
-    const ph  = document.getElementById('bannerPlaceholder');
-    if (!img || !ph) return;
-    img.classList.remove('loaded');
-    ph.classList.remove('hidden');
+    if (!img) return;
+    img.src = HOME_PHOTO;
     img.style.display = 'block';
-    if ('IntersectionObserver' in window) {
-        const obs = new IntersectionObserver(function(entries){
-            entries.forEach(function(e){
-                if (e.isIntersecting){ img.src = HOME_PHOTO; obs.unobserve(img); }
-            });
-        }, { rootMargin:'200px' });
-        obs.observe(img);
-    } else { img.src = HOME_PHOTO; }
 }
 
 function showToast(msg){
@@ -326,7 +327,7 @@ function copyWifi(){
 }
 
 // ==============================================
-// DATI (con aggiunta polacco dove possibile)
+// DATI
 // ==============================================
 const appData = {
     checkin_time: 'da concordare, massima disponibilità',
@@ -422,7 +423,7 @@ const appData = {
 };
 
 // ==============================================
-// SEZIONI (con etichette polacche)
+// SEZIONI
 // ==============================================
 const sections = [
     { id:'mustsee',      icon:'🚶',  label_it:'Tour a piedi',         label_en:'Walking Tour',        label_pl:'Wycieczka piesza' },
@@ -446,23 +447,6 @@ function setLang(lang){
     document.getElementById('btn-en').classList.toggle('active', lang==='en');
     document.getElementById('btn-pl').classList.toggle('active', lang==='pl');
     renderAll();
-}
-
-function setBannerPhoto(){
-    const img = document.getElementById('bannerImg');
-    const ph  = document.getElementById('bannerPlaceholder');
-    if (!img || !ph) return;
-    img.classList.remove('loaded');
-    ph.classList.remove('hidden');
-    img.style.display = 'block';
-    if ('IntersectionObserver' in window) {
-        const obs = new IntersectionObserver(function(entries){
-            entries.forEach(function(e){
-                if (e.isIntersecting){ img.src = HOME_PHOTO; obs.unobserve(img); }
-            });
-        }, { rootMargin:'200px' });
-        obs.observe(img);
-    } else { img.src = HOME_PHOTO; }
 }
 
 function showToast(msg){
